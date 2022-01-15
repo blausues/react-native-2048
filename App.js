@@ -7,21 +7,27 @@ const App = () => {
     const [boxData, setBoxData] = useState([]);
 
     useEffect(() => {
-        const items = [...Array(numColumns * numColumns)].map((v, i) => 0);
+        const items = [...Array(numColumns * numColumns)].map((v, i) =>
+            i === 0 || i === 2 ? 2 : null
+        );
         setBoxData(items);
     }, []);
+
+    // 1차원배열로 해보기?
+    function onSwipeLeft() {
+    }
 
     function onSwipe(gestureName, gestureState) {
         const {SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT} = swipeDirections;
         switch (gestureName) {
             case SWIPE_UP:
-                setBoxData([...Array(numColumns * numColumns)].map((v, i) => 1));
+                // setBoxData([...Array(numColumns * numColumns)].map((v, i) => 1));
                 break;
             case SWIPE_DOWN:
-                setBoxData([...Array(numColumns * numColumns)].map((v, i) => 2));
+                // setBoxData([...Array(numColumns * numColumns)].map((v, i) => 2));
                 break;
             case SWIPE_LEFT:
-                setBoxData([...Array(numColumns * numColumns)].map((v, i) => 3));
+                onSwipeLeft();
                 break;
             case SWIPE_RIGHT:
                 setBoxData([...Array(numColumns * numColumns)].map((v, i) => 4));
@@ -42,7 +48,7 @@ const App = () => {
                     data={boxData}
                     renderItem={({item}) => (
                         <View style={styles.box}>
-                            <Text>{item}</Text>
+                            <Text>{item || ''}</Text>
                         </View>
                     )}
                     numColumns={numColumns}
