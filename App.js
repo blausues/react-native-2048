@@ -8,7 +8,7 @@ const App = () => {
 
     useEffect(() => {
         const items = [...Array(numColumns * numColumns)].map((v, i) =>
-            i === 0 || i === 2 ? 2 : null
+            i === 0 || i === 2 ? 2 : 0
         );
         setBoxData(items);
     }, []);
