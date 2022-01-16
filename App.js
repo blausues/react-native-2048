@@ -7,15 +7,45 @@ const App = () => {
     const [boxData, setBoxData] = useState([]);
 
     useEffect(() => {
-        const items = [...Array(numColumns * numColumns)].map((v, i) =>
-            i === 0 || i === 2 ? 2 : 0
-        );
+        // const items = Array.from(Array(numColumns), () => Array(numColumns).fill(0));
+        // const items = [...Array(numColumns * numColumns)].map((v, i) =>
+        //     i === 0 || i === 2 ? 2 : 0
+        // );
+        const items = [
+            [0,2,2,0],
+            [0,0,0,0],
+            [2,2,2,2],
+            [0,0,0,0],
+        ];
         setBoxData(items);
     }, []);
 
-    // 1차원배열로 해보기?
-    function onSwipeLeft() {
-    }
+    const move = value => {
+        return value.reduce((acc, cur) => {
+            const tmp = cur.filter(v => v > 0);
+            acc.push(tmp.concat(Array(numColumns - tmp.length).fill(0)));
+            return acc;
+        }, []);
+    };
+
+    const combine = value => {
+        value.forEach((v, i) => {
+            v.some((cur, j) => {
+                if (cur === 0) return true;
+                if (j > 0 && v[j - 1] === cur) {
+                    v[j - 1] = v[j - 1] * 2;
+                    v[j] = 0;
+                }
+                return false;
+            });
+        });
+        return value;
+    };
+
+    const onSwipeLeft = () => {
+        // 왼쪽으로 붙이기 -> 합치기 -> 왼쪽으로 붙이기
+        setBoxData(move(combine(move(boxData))));
+    };
 
     function onSwipe(gestureName, gestureState) {
         const {SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT} = swipeDirections;
@@ -30,7 +60,7 @@ const App = () => {
                 onSwipeLeft();
                 break;
             case SWIPE_RIGHT:
-                setBoxData([...Array(numColumns * numColumns)].map((v, i) => 4));
+                // onSwipeRight();
                 break;
         }
     }
@@ -45,7 +75,7 @@ const App = () => {
                 }}
                 style={styles.gesture}>
                 <FlatList
-                    data={boxData}
+                    data={boxData.reduce((acc, cur) => acc.concat(cur))}
                     renderItem={({item}) => (
                         <View style={styles.box}>
                             <Text>{item || ''}</Text>
