@@ -1,25 +1,41 @@
-import React, {useEffect, useState} from 'react';
-import {SafeAreaView, StyleSheet, View, FlatList, Text} from 'react-native';
+import React, {useState} from 'react';
+import {
+    SafeAreaView,
+    StyleSheet,
+    View,
+    FlatList,
+    Text,
+    Button,
+} from 'react-native';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
-// TODO: 랜덤으로 숫자 생성, 게임오버 여부, numColumns 선택
-const App = () => {
-    const numColumns = 4;
-    const [boxData, setBoxData] = useState([]);
+const items5 = [
+    [0, 2, 2, 0, 0],
+    [0, 0, 0, 0, 2],
+    [2, 2, 2, 2, 2],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+];
+const items4 = [
+    [0, 2, 2, 0],
+    [0, 0, 0, 0],
+    [2, 2, 2, 2],
+    [0, 0, 0, 0],
+];
 
-    useEffect(() => {
-        // const items = Array.from(Array(numColumns), () => Array(numColumns).fill(0));
-        // const items = [...Array(numColumns * numColumns)].map((v, i) =>
-        //     i === 0 || i === 2 ? 2 : 0
-        // );
-        const items = [
-            [0, 2, 2, 0],
-            [0, 0, 0, 0],
-            [2, 2, 2, 2],
-            [0, 0, 0, 0],
-        ];
-        setBoxData(items);
-    }, []);
+// TODO: 랜덤으로 숫자 생성, 게임오버 여부
+const App = () => {
+    const [boxData, setBoxData] = useState(items4);
+    const [numColumns, setNumColumns] = useState(4);
+
+    const changeNumColumns = value => {
+        setNumColumns(value);
+        if (value == 4) {
+            setBoxData(items4);
+        } else {
+            setBoxData(items5);
+        }
+    };
 
     // 왼쪽으로 붙이기
     const move = value => {
@@ -103,16 +119,31 @@ const App = () => {
                 }}
                 style={styles.gesture}>
                 <FlatList
-                    data={(boxData || []).reduce((acc, cur) => acc.concat(cur))}
+                    data={boxData.reduce((acc, cur) => acc.concat(cur))}
                     renderItem={({item}) => (
                         <View style={styles.box}>
-                            <Text>{item || ''}</Text>
+                            <Text style={styles.boxText}>{item || ''}</Text>
                         </View>
                     )}
                     numColumns={numColumns}
-                    keyExtractor={(item, index) => index}
+                    keyExtractor={(item, index) => item + index}
+                    key={numColumns}
                 />
             </GestureRecognizer>
+            <View style={styles.buttonGroup}>
+                <Button
+                    style={styles.button}
+                    color="#1FB963"
+                    title="4X4"
+                    onPress={() => changeNumColumns(4)}
+                />
+                <Button
+                    style={styles.button}
+                    color="#1FB963"
+                    title="5X5"
+                    onPress={() => changeNumColumns(5)}
+                />
+            </View>
         </SafeAreaView>
     );
 };
@@ -134,7 +165,20 @@ const styles = StyleSheet.create({
         backgroundColor: '#e9e9e9',
         margin: 1,
     },
+    boxText: {
+        fontSize: 30,
+        fontWeight: '400',
+    },
     gesture: {
         flex: 1,
+    },
+    buttonGroup: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+    },
+    button: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
