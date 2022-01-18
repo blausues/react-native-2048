@@ -12,14 +12,15 @@ const App = () => {
         //     i === 0 || i === 2 ? 2 : 0
         // );
         const items = [
-            [0,2,2,0],
-            [0,0,0,0],
-            [2,2,2,2],
-            [0,0,0,0],
+            [0, 2, 2, 0],
+            [0, 0, 0, 0],
+            [2, 2, 2, 2],
+            [0, 0, 0, 0],
         ];
         setBoxData(items);
     }, []);
 
+    // 왼쪽으로 붙이기
     const move = value => {
         return value.reduce((acc, cur) => {
             const tmp = cur.filter(v => v > 0);
@@ -28,6 +29,7 @@ const App = () => {
         }, []);
     };
 
+    // 왼쪽으로 합치기
     const combine = value => {
         value.forEach((v, i) => {
             v.some((cur, j) => {
@@ -42,28 +44,53 @@ const App = () => {
         return value;
     };
 
-    const onSwipeLeft = () => {
-        // 왼쪽으로 붙이기 -> 합치기 -> 왼쪽으로 붙이기
-        setBoxData(move(combine(move(boxData))));
+    const rotateLeft = value => {
+        const result = [];
+        value.forEach((a, i) => {
+            a.forEach((b, j) => {
+                result[a.length - j - 1] = result[a.length - j - 1] || [];
+                result[a.length - j - 1][i] = b;
+            });
+        });
+        return result;
     };
 
-    function onSwipe(gestureName, gestureState) {
+    const rotateRight = value => {
+        const result = [];
+        value.forEach((a, i) => {
+            a.forEach((b, j) => {
+                result[j] = result[j] || [];
+                result[j][value.length - i - 1] = b;
+            });
+        });
+        return result;
+    };
+
+    const reverse2d = value => value.map(v => v.slice().reverse()).reverse();
+
+    const onSwipe = (gestureName, gestureState) => {
         const {SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT} = swipeDirections;
         switch (gestureName) {
             case SWIPE_UP:
-                // setBoxData([...Array(numColumns * numColumns)].map((v, i) => 1));
+                // 왼쪽으로 돌리기 -> 왼쪽으로 붙이기 -> 합치기 -> 왼쪽으로 붙이기 -> 오른쪽으로 돌리기
+                setBoxData(
+                    rotateRight(move(combine(move(rotateLeft(boxData)))))
+                );
                 break;
             case SWIPE_DOWN:
-                // setBoxData([...Array(numColumns * numColumns)].map((v, i) => 2));
+                setBoxData(
+                    rotateLeft(move(combine(move(rotateRight(boxData)))))
+                );
                 break;
             case SWIPE_LEFT:
-                onSwipeLeft();
+                // 왼쪽으로 붙이기 -> 합치기 -> 왼쪽으로 붙이기
+                setBoxData(move(combine(move(boxData))));
                 break;
             case SWIPE_RIGHT:
-                // onSwipeRight();
+                setBoxData(reverse2d(move(combine(move(reverse2d(boxData))))));
                 break;
         }
-    }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -75,7 +102,7 @@ const App = () => {
                 }}
                 style={styles.gesture}>
                 <FlatList
-                    data={boxData.reduce((acc, cur) => acc.concat(cur))}
+                    data={(boxData || []).reduce((acc, cur) => acc.concat(cur))}
                     renderItem={({item}) => (
                         <View style={styles.box}>
                             <Text>{item || ''}</Text>
