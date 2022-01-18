@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {SafeAreaView, StyleSheet, View, FlatList, Text} from 'react-native';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
+// TODO: 랜덤으로 숫자 생성, 게임오버 여부, numColumns 선택
 const App = () => {
     const numColumns = 4;
     const [boxData, setBoxData] = useState([]);
