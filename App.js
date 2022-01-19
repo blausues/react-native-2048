@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -17,9 +17,9 @@ const items5 = [
     [0, 0, 0, 0, 0],
 ];
 const items4 = [
-    [0, 2, 2, 0],
     [0, 0, 0, 0],
-    [2, 2, 2, 2],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
     [0, 0, 0, 0],
 ];
 
@@ -27,6 +27,30 @@ const items4 = [
 const App = () => {
     const [boxData, setBoxData] = useState(items4);
     const [numColumns, setNumColumns] = useState(4);
+
+    // 랜덤으로 띄우기
+    const generate = num => {
+        const emptyIdx = [];
+        boxData.forEach((a, i) =>
+            a.forEach((b, j) => {
+                if (!b) emptyIdx.push([i, j]);
+            })
+        );
+
+        const box = boxData.slice();
+        // 랜덤으로 num개 2로 채워주기
+        for (let i = 0; i < num; i++) {
+            const randIdx = Math.floor(Math.random() * emptyIdx.length);
+            const v = emptyIdx.splice(randIdx, 1);
+            box[v[0][0]][v[0][1]] = 2;
+        }
+        setBoxData(box);
+    };
+
+    // TODO: useEffect를 하지않고 초기화하는 방법 생각해보기
+    useEffect(() => {
+        generate(2);
+    }, []);
 
     const changeNumColumns = value => {
         setNumColumns(value);
@@ -147,6 +171,7 @@ const App = () => {
         </SafeAreaView>
     );
 };
+
 export default App;
 
 const styles = StyleSheet.create({
