@@ -9,56 +9,38 @@ import {
 } from 'react-native';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
-const items5 = [
-    [0, 2, 2, 0, 0],
-    [0, 0, 0, 0, 2],
-    [2, 2, 2, 2, 2],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-];
-const items4 = [
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-];
-
 // TODO: 랜덤으로 숫자 생성, 게임오버 여부
 const App = () => {
-    const [boxData, setBoxData] = useState(items4);
-    const [numColumns, setNumColumns] = useState(4);
+    const newInitBox = value => {
+        return Array.from(Array(value), () => Array(value).fill(0));
+    };
 
     // 랜덤으로 띄우기
-    const generate = num => {
+    const generate = (num, array) => {
         const emptyIdx = [];
-        boxData.forEach((a, i) =>
+        array.forEach((a, i) =>
             a.forEach((b, j) => {
                 if (!b) emptyIdx.push([i, j]);
             })
         );
 
-        const box = boxData.slice();
+        const box = array.slice();
         // 랜덤으로 num개 2로 채워주기
         for (let i = 0; i < num; i++) {
             const randIdx = Math.floor(Math.random() * emptyIdx.length);
-            const v = emptyIdx.splice(randIdx, 1);
-            box[v[0][0]][v[0][1]] = 2;
+            const [v] = emptyIdx.splice(randIdx, 1);
+            box[v[0]][v[1]] = 2;
         }
-        setBoxData(box);
+        return box;
     };
 
-    // TODO: useEffect를 하지않고 초기화하는 방법 생각해보기
-    useEffect(() => {
-        generate(2);
-    }, []);
+    const [numColumns, setNumColumns] = useState(4);
+    const [boxData, setBoxData] = useState(generate(2, newInitBox(numColumns)));
 
     const changeNumColumns = value => {
+        console.log('change..')
         setNumColumns(value);
-        if (value == 4) {
-            setBoxData(items4);
-        } else {
-            setBoxData(items5);
-        }
+        newInitBox(value);
     };
 
     // 왼쪽으로 붙이기
@@ -109,26 +91,27 @@ const App = () => {
 
     const reverse2d = value => value.map(v => v.slice().reverse()).reverse();
 
+    const swipeFn = value => {
+        // TODO: 아무것도 안 움직였을 때는 generate 안해야 함
+        setBoxData(generate(1, value));
+    };
+
     const onSwipe = (gestureName, gestureState) => {
         const {SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT} = swipeDirections;
         switch (gestureName) {
             case SWIPE_UP:
                 // 왼쪽으로 돌리기 -> 왼쪽으로 붙이기 -> 합치기 -> 왼쪽으로 붙이기 -> 오른쪽으로 돌리기
-                setBoxData(
-                    rotateRight(move(combine(move(rotateLeft(boxData)))))
-                );
+                swipeFn(rotateRight(move(combine(move(rotateLeft(boxData))))));
                 break;
             case SWIPE_DOWN:
-                setBoxData(
-                    rotateLeft(move(combine(move(rotateRight(boxData)))))
-                );
+                swipeFn(rotateLeft(move(combine(move(rotateRight(boxData))))));
                 break;
             case SWIPE_LEFT:
                 // 왼쪽으로 붙이기 -> 합치기 -> 왼쪽으로 붙이기
-                setBoxData(move(combine(move(boxData))));
+                swipeFn(move(combine(move(boxData))));
                 break;
             case SWIPE_RIGHT:
-                setBoxData(reverse2d(move(combine(move(reverse2d(boxData))))));
+                swipeFn(reverse2d(move(combine(move(reverse2d(boxData))))));
                 break;
         }
     };
