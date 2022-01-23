@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
-// TODO: 랜덤으로 숫자 생성, 게임오버 여부
+// TODO: 게임오버 체크
 const App = () => {
     const newInitBox = value => {
         return Array.from(Array(value), () => Array(value).fill(0));
@@ -38,7 +38,6 @@ const App = () => {
     const [boxData, setBoxData] = useState(generate(2, newInitBox(numColumns)));
 
     const changeNumColumns = value => {
-        console.log('change..')
         setNumColumns(value);
         newInitBox(value);
     };
@@ -92,8 +91,19 @@ const App = () => {
     const reverse2d = value => value.map(v => v.slice().reverse()).reverse();
 
     const swipeFn = value => {
-        // TODO: 아무것도 안 움직였을 때는 generate 안해야 함
-        setBoxData(generate(1, value));
+        // 하나도 안 바뀌었으면 새로 생성하지 않는다
+        if (!checkEqual2d(boxData, value)) {
+            setBoxData(generate(1, value));
+        }
+    };
+
+    const checkEqual2d = (originArr, afterArr) => {
+        for (let i = 0; i < numColumns; i++) {
+            for (let j = 0; j < numColumns; j++) {
+                if (originArr[i][j] !== afterArr[i][j]) return false;
+            }
+        }
+        return true;
     };
 
     const onSwipe = (gestureName, gestureState) => {
