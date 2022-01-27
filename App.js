@@ -131,7 +131,7 @@ const App = () => {
             <GestureRecognizer
                 onSwipe={(direction, state) => onSwipe(direction, state)}
                 config={{
-                    velocityThreshold: 0.3,
+                    velocityThreshold: 0.01,
                     directionalOffsetThreshold: 80,
                 }}
                 style={styles.gesture}>
