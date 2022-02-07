@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
-// TODO: 게임오버 체크
 const App = () => {
     const newInitBox = value => {
         return Array.from(Array(value), () => Array(value).fill(0));
@@ -36,10 +35,27 @@ const App = () => {
 
     const [numColumns, setNumColumns] = useState(4);
     const [boxData, setBoxData] = useState(generate(2, newInitBox(numColumns)));
+    const [gameOver, setGameOver] = useState(false);
 
     const changeNumColumns = value => {
         setNumColumns(value);
         setBoxData(generate(2, newInitBox(value)));
+    };
+
+    const checkGameOver = () => {
+        for (let i = 0; i < numColumns; i++) {
+            for (let j = 0; j < numColumns; j++) {
+                if (
+                    !boxData[i][j] ||
+                    (i >= 1 && boxData[i][j] === boxData[i - 1][j]) ||
+                    (j >= 1 && boxData[i][j] === boxData[i][j - 1]) ||
+                    boxData[i][j] === boxData[i + 1][j] ||
+                    boxData[i][j] === boxData[i][j + 1]
+                )
+                    return false;
+            }
+        }
+        return true;
     };
 
     function change(value) {
@@ -80,7 +96,7 @@ const App = () => {
                 value = result;
                 return this;
             },
-            
+
             rotateRight() {
                 const result = [];
                 value.forEach((a, i) => {
@@ -118,9 +134,12 @@ const App = () => {
 
     const onSwipe = (gestureName, gestureState) => {
         const {SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT} = swipeDirections;
+
+        setGameOver(checkGameOver());
+        if (gameOver) return;
+
         switch (gestureName) {
             case SWIPE_UP:
-                // TODO: 붙일게 있는지 체크해서 게임오버 체크
                 // 왼쪽으로 돌리기 -> 왼쪽으로 붙이기 -> 합치기 -> 왼쪽으로 붙이기 -> 오른쪽으로 돌리기
                 change(boxData)
                     .rotateLeft()
@@ -180,6 +199,7 @@ const App = () => {
                     key={numColumns}
                 />
             </GestureRecognizer>
+            <Text>{gameOver ? 'GAME OVER' : ''}</Text>
             <View style={styles.buttonGroup}>
                 <Button
                     style={styles.button}
