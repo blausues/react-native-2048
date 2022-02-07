@@ -38,9 +38,8 @@ const App = () => {
     const [boxData, setBoxData] = useState(generate(2, newInitBox(numColumns)));
 
     const changeNumColumns = value => {
-        // TODO: 5x5로 바꾼다음에 초기화해야됨
         setNumColumns(value);
-        newInitBox(value);
+        setBoxData(generate(2, newInitBox(value)));
     };
 
     function change(value) {
