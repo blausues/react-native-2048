@@ -38,64 +38,75 @@ const App = () => {
     const [boxData, setBoxData] = useState(generate(2, newInitBox(numColumns)));
 
     const changeNumColumns = value => {
+        // TODO: 5x5로 바꾼다음에 초기화해야됨
         setNumColumns(value);
         newInitBox(value);
     };
 
-    // 왼쪽으로 붙이기
-    const move = value => {
-        return value.reduce((acc, cur) => {
-            const tmp = cur.filter(v => v > 0);
-            acc.push(tmp.concat(Array(numColumns - tmp.length).fill(0)));
-            return acc;
-        }, []);
-    };
+    function change(value) {
+        return {
+            // 왼쪽으로 붙이기
+            move() {
+                value = value.reduce((acc, cur) => {
+                    const tmp = cur.filter(v => v > 0);
+                    acc.push(tmp.concat(Array(numColumns - tmp.length).fill(0)));
+                    return acc;
+                }, []);
+                return this;
+            },
 
-    // 왼쪽으로 합치기
-    const combine = value => {
-        value.forEach((v, i) => {
-            v.some((cur, j) => {
-                if (cur === 0) return true;
-                if (j > 0 && v[j - 1] === cur) {
-                    v[j - 1] = v[j - 1] * 2;
-                    v[j] = 0;
+            // 왼쪽으로 합치기
+            combine() {
+                value.forEach((v, i) => {
+                    v.some((cur, j) => {
+                        if (cur === 0) return true;
+                        if (j > 0 && v[j - 1] === cur) {
+                            v[j - 1] = v[j - 1] * 2;
+                            v[j] = 0;
+                        }
+                        return false;
+                    });
+                });
+                return this;
+            },
+
+            rotateLeft() {
+                const result = [];
+                value.forEach((a, i) => {
+                    a.forEach((b, j) => {
+                        result[a.length - j - 1] = result[a.length - j - 1] || [];
+                        result[a.length - j - 1][i] = b;
+                    });
+                });
+                value = result;
+                return this;
+            },
+            
+            rotateRight() {
+                const result = [];
+                value.forEach((a, i) => {
+                    a.forEach((b, j) => {
+                        result[j] = result[j] || [];
+                        result[j][value.length - i - 1] = b;
+                    });
+                });
+                value = result;
+                return this;
+            },
+
+            reverse2d() {
+                value = value.map(v => v.slice().reverse()).reverse();
+                return this;
+            },
+
+            swipeFn() {
+                // 하나도 안 바뀌었으면 새로 생성하지 않는다
+                if (!checkEqual2d(boxData, value)) {
+                    setBoxData(generate(1, value));
                 }
-                return false;
-            });
-        });
-        return value;
-    };
-
-    const rotateLeft = value => {
-        const result = [];
-        value.forEach((a, i) => {
-            a.forEach((b, j) => {
-                result[a.length - j - 1] = result[a.length - j - 1] || [];
-                result[a.length - j - 1][i] = b;
-            });
-        });
-        return result;
-    };
-
-    const rotateRight = value => {
-        const result = [];
-        value.forEach((a, i) => {
-            a.forEach((b, j) => {
-                result[j] = result[j] || [];
-                result[j][value.length - i - 1] = b;
-            });
-        });
-        return result;
-    };
-
-    const reverse2d = value => value.map(v => v.slice().reverse()).reverse();
-
-    const swipeFn = value => {
-        // 하나도 안 바뀌었으면 새로 생성하지 않는다
-        if (!checkEqual2d(boxData, value)) {
-            setBoxData(generate(1, value));
-        }
-    };
+            },
+        };
+    }
 
     const checkEqual2d = (originArr, afterArr) => {
         for (let i = 0; i < numColumns; i++) {
@@ -110,18 +121,41 @@ const App = () => {
         const {SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT} = swipeDirections;
         switch (gestureName) {
             case SWIPE_UP:
+                // TODO: 붙일게 있는지 체크해서 게임오버 체크
                 // 왼쪽으로 돌리기 -> 왼쪽으로 붙이기 -> 합치기 -> 왼쪽으로 붙이기 -> 오른쪽으로 돌리기
-                swipeFn(rotateRight(move(combine(move(rotateLeft(boxData))))));
+                change(boxData)
+                    .rotateLeft()
+                    .move()
+                    .combine()
+                    .move()
+                    .rotateRight()
+                    .swipeFn();
                 break;
             case SWIPE_DOWN:
-                swipeFn(rotateLeft(move(combine(move(rotateRight(boxData))))));
+                change(boxData)
+                    .rotateRight()
+                    .move()
+                    .combine()
+                    .move()
+                    .rotateLeft()
+                    .swipeFn();
                 break;
             case SWIPE_LEFT:
                 // 왼쪽으로 붙이기 -> 합치기 -> 왼쪽으로 붙이기
-                swipeFn(move(combine(move(boxData))));
+                change(boxData)
+                    .move()
+                    .combine()
+                    .move()
+                    .swipeFn();
                 break;
             case SWIPE_RIGHT:
-                swipeFn(reverse2d(move(combine(move(reverse2d(boxData))))));
+                change(boxData)
+                    .reverse2d()
+                    .move()
+                    .combine()
+                    .move()
+                    .reverse2d()
+                    .swipeFn();
                 break;
         }
     };
